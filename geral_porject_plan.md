@@ -22,8 +22,8 @@
 |---|---|---|
 | Bloco 0 — Fundação (`M01`, infra) | ✅ concluído | commit `9b0aa21` em `main` |
 | `M01` — Core | ✅ concluído | `backend/src/main/java/br/ufmg/plataforma/core/`; `mvnw clean test` = 9 verdes; `docker compose up` sobe `db`+`backend`, `/actuator/health` UP, Swagger OK |
-| Bloco 1 — `M02` (IAM) | ⬜ **próximo** | — |
-| Bloco 1 — `M03` (Projetos) | ⬜ | — |
+| Bloco 1 — `M02` (IAM) | ✅ concluído | `backend/.../iam/`; `V2__iam.sql`; `mvnw clean test` = 25 verdes (inclui `IamIntegrationTest` feliz + 401/403); ADR `docs/adr/0002` |
+| Bloco 1 — `M03` (Projetos) | ⬜ **próximo** | — |
 | Bloco 1 — parte de `M14` (shell do front) | ⬜ | — |
 | Blocos 2–9 | ⬜ | — |
 
@@ -37,12 +37,14 @@ um módulo = um pacote Java (não um serviço) · `mvnw` com `JAVA_HOME` =
 `BaseEntity` / `AuditableEntity` (`core.domain`) · `DomainException` /
 `ResourceNotFoundException` / `BusinessRuleException` · `GlobalExceptionHandler` +
 `ErrorType` (`core.web`, contrato `IF-01` RFC 9457) · `DomainEventPublisher` (`core.event`,
-`IF-02`) · `@EnableJpaAuditing` + `AuditorAware` devolvendo `"system"` (`core.config` —
-o `M02` deve trocar para o usuário autenticado) · `SecurityConfig` **provisório** que libera
-tudo (`core.config` — o `M02` **substitui** por `SecurityFilterChain` com JWT + RBAC) ·
-OpenAPI com `SecurityScheme` `bearer-jwt` já registrado · CORS para `app.cors.allowed-origins`.
-Migrations: só `V1__baseline.sql` (`pgcrypto`); o `M02` cria `V2__iam.sql`.
-`PageResponse`/DTO de paginação ainda **não existe** — criar no `M02`.
+`IF-02`) · `@EnableJpaAuditing` (`core.config`) · OpenAPI com `SecurityScheme` `bearer-jwt` já registrado ·
+CORS para `app.cors.allowed-origins`.
+
+> **Após o `M02`:** o `AuditorAware` provisório e o `SecurityConfig` que liberava tudo foram
+> removidos do `core`; o `M02` fornece `SecurityFilterChain` com JWT + RBAC
+> (`iam.infrastructure.SecurityConfig`) e `SecurityAuditorAware` (usuário autenticado ↦
+> `createdBy`/`updatedBy`, senão `"system"`). `core.web.PageResponse<T>` criado. Migrations:
+> `V1__baseline.sql` + `V2__iam.sql`.
 
 ---
 
@@ -427,6 +429,15 @@ Coluna "TCC1" indica o requisito correspondente na monografia original, quando e
 - **Critérios de aceitação:** login retorna token válido; endpoint protegido rejeita requisição
   sem token (401) e usuário sem papel (403); usuário autenticado é resolvível por qualquer
   serviço via `IF-03`.
+- **Nota de implementação (2026-09-07):** entregue em `br.ufmg.plataforma.iam`
+  (`api/application/domain/infrastructure`). `E-01/E-02/E-03` + `V2__iam.sql` (semeia os 5
+  papéis e o usuário `admin`/`admin12345`). Login/refresh com jjwt HS256 (`D-12`), senha BCrypt.
+  `SecurityFilterChain` real com whitelist (`/auth/**`, health/info, OpenAPI) e `@PreAuthorize`
+  para o CRUD de usuário (só `ADMIN`). `IF-03 AuthService` e `IF-04 AccessGuard` em
+  `iam.application`; `AccessGuard` interino por papel global (`D-13`). `SecurityAuditorAware`
+  substitui o `AuditorAware` provisório do `core`. Papéis globais são catálogo fixo
+  (`GET /roles`, sem CRUD). **Para o `M03`:** papéis por projeto (`project_members`),
+  `projectId` real no `AccessGuard`, e o shell de login do `M14`.
 
 ---
 
@@ -832,10 +843,14 @@ Prefixo: `/api/v1`. Todas as rotas de projeto embutem `projectId`. Autenticaçã
 
 ```
 POST   /auth/login                      → { token, refreshToken, user }
-POST   /auth/refresh
+POST   /auth/refresh                    { refreshToken } → novo par (rotação)
 GET    /users/me
-GET    /users                           (ADMIN)
+GET    /users                           (ADMIN)  paginado (PageResponse)
 POST   /users                           (ADMIN)
+PUT    /users/{id}                       (ADMIN)  edita username/email
+PATCH  /users/{id}/active                (ADMIN)  { active } — ativar/desativar (RF-02)
+PUT    /users/{id}/roles                 (ADMIN)  { roles: ["ADMIN", ...] }
+GET    /roles                            catálogo fixo de papéis globais (autenticado)
 GET    /projects
 POST   /projects
 GET    /projects/{p}
@@ -1239,8 +1254,11 @@ ser marcados como "escopo reduzido" na monografia, com justificativa.
 | `D-09` | Contrato de erro HTTP = RFC 9457 `ProblemDetail` + `traceId` (`IF-01`) | DTO de erro próprio | Nativo do Spring, menos código |
 | `D-10` | Eventos de domínio (`IF-02`) sobre `ApplicationEventPublisher` via interface `DomainEventPublisher` | Barramento próprio; `@DomainEvents` do Spring Data | Reaproveita infra do Spring; ArchUnit garante o desacoplamento |
 | `D-11` | Identificadores = `UUID` puro gerado pela aplicação (`@UuidGenerator`) | Typed IDs (`Id` wrapper) | Menos cerimônia para um MVP; introduzível depois |
+| `D-12` | JWT via biblioteca **jjwt** (`io.jsonwebtoken`), HS256 com segredo simétrico; access + refresh token, refresh **stateless** (sem lista de revogação) | Spring Security OAuth2 Resource Server + Nimbus; sessão de servidor | API mínima para emitir no login e um `OncePerRequestFilter` para validar; revogação fora do escopo do MVP |
+| `D-13` | `IF-04 AccessGuard` com implementação **interina por papel global** no `M02`; `projectId` já na assinatura, consultado só a partir do `M03` | Adiar o contrato até o `M03`; duplicar a lógica depois | Permite que M03+ programem contra `IF-04` desde já; o `M03` adiciona `project_members` sem quebrar a assinatura |
 
 > Decisões `D-08`..`D-11` registradas em 2026-09-07 (Bloco 0 / M01). Detalhe em `docs/adr/0001`.
+> Decisões `D-12`..`D-13` registradas em 2026-09-07 (Bloco 1 / M02). Detalhe em `docs/adr/0002`.
 > Novas decisões devem ser acrescentadas nesta tabela com data e contexto.
 
 ---

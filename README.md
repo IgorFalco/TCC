@@ -59,6 +59,21 @@ cd frontend && npm install && npm run dev
 | Health | http://localhost:8080/actuator/health |
 | PostgreSQL | localhost:5432 |
 
+## Autenticação (M02 / IAM)
+
+Todos os endpoints sob `/api/v1` exigem `Authorization: Bearer <token>`, exceto
+`/api/v1/auth/**`, o Swagger e `/actuator/health`. Obtenha um token com:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"usernameOrEmail":"admin","password":"admin12345"}'
+```
+
+O usuário `admin` (papel `ADMIN`) é semeado por `V2__iam.sql`. **Troque a senha fora de
+desenvolvimento.**
+
 ## Plano de implementação
 
-Ver Seção 10 do plano. Estado atual: **Bloco 0 — Fundação** (estrutura do repositório).
+Ver Seção 10 do plano. Estado atual: **Bloco 1** — `M02` (IAM) concluído; `M03` (Projetos) e
+shell do `M14` a seguir.

@@ -20,8 +20,8 @@ services:
 
   backend:
     build:
-      context: ../backend
-      dockerfile: ../infra/docker/backend.Dockerfile
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
     container_name: tcc-backend
     depends_on:
       db:

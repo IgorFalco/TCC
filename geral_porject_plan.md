@@ -95,7 +95,7 @@ corporativas externas (não integradas neste TCC, mas previstas por `RNF-07`).
 | Editor de código | Monaco Editor | edição dos scripts JS |
 | Estado/dados no front | TanStack Query + Zustand (ou Context) | cache de API e estado local do editor |
 | Estilo | Tailwind CSS + biblioteca de componentes (shadcn/ui) | consistência visual |
-| Backend | Java 21 + Spring Boot 3.x | API REST, domínio, execução |
+| Backend | Java 21 + Spring Boot 4.1.x | API REST, domínio, execução (ver `D-08`; o Initializr não gera mais 3.x) |
 | Persistência | Spring Data JPA + Hibernate | mapeamento ORM |
 | Banco | PostgreSQL 16 (colunas `JSONB`) | dados relacionais + dinâmicos |
 | Migrations | Flyway | versionamento do schema |
@@ -372,6 +372,11 @@ Coluna "TCC1" indica o requisito correspondente na monografia original, quando e
 - **Requisitos:** apoio a todos; `RNF-12`.
 - **Critérios de aceitação:** aplicação sobe com `docker compose up`; erro de validação retorna
   payload padronizado; migration inicial aplicada; Swagger acessível.
+- **Nota de implementação (2026-09-07):** entregue com `@RestControllerAdvice` + RFC 9457
+  `ProblemDetail` (`D-09`), `BaseEntity`/`AuditableEntity`, `DomainEventPublisher` (`D-10`),
+  CORS, OpenAPI e harness ArchUnit. Os tipos comuns `Id`/`AuditInfo`/`Page` viram `UUID` puro
+  (`D-11`) + `PageResponse` a ser criado no M02; a tabela `audit_logs` (E-27) e o filtro de
+  correlação/MDC migram para o `M15`. Segurança fica liberada por um filtro provisório até o M02.
 
 ---
 
@@ -1197,7 +1202,12 @@ ser marcados como "escopo reduzido" na monografia, com justificativa.
 | `D-05` | Versão publicada imutável | Edição direta do modelo em uso | Instâncias em andamento precisam de definição estável; garante rastreabilidade |
 | `D-06` | Vínculo de metadados pelo `id` do elemento BPMN | Cópia do elemento em tabela própria | Mantém o XML como fonte de verdade do desenho |
 | `D-07` | Rastreabilidade polimórfica (`type` + `id`) | Tabela de vínculo por par de tipos | Flexibilidade para novos tipos de relação sem migração |
+| `D-08` | Spring Boot **4.1.x** + Java **21** (baseline revisto; upgrade p/ Java 25 descartado) | Boot 3.x (Initializr não gera mais); Java 25 | Manter alinhamento com o plano e compatibilidade de libs; Boot 4 suporta Java 21 |
+| `D-09` | Contrato de erro HTTP = RFC 9457 `ProblemDetail` + `traceId` (`IF-01`) | DTO de erro próprio | Nativo do Spring, menos código |
+| `D-10` | Eventos de domínio (`IF-02`) sobre `ApplicationEventPublisher` via interface `DomainEventPublisher` | Barramento próprio; `@DomainEvents` do Spring Data | Reaproveita infra do Spring; ArchUnit garante o desacoplamento |
+| `D-11` | Identificadores = `UUID` puro gerado pela aplicação (`@UuidGenerator`) | Typed IDs (`Id` wrapper) | Menos cerimônia para um MVP; introduzível depois |
 
+> Decisões `D-08`..`D-11` registradas em 2026-09-07 (Bloco 0 / M01). Detalhe em `docs/adr/0001`.
 > Novas decisões devem ser acrescentadas nesta tabela com data e contexto.
 
 ---

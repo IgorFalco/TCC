@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Plataforma BPMN com Engenharia de Sistemas — API",
+    "description": "TCC2 — modelagem BPMN, requisitos, metamodelo dinâmico e execução de processos.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearer-jwt": []
+    }
+  ],
+  "paths": {},
+  "components": {
+    "securitySchemes": {
+      "bearer-jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

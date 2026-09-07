@@ -12,7 +12,7 @@ dados dinâmicas pelo frontend e executar/simular instâncias desses processos.
 
 | Pasta | Módulo do plano | Conteúdo |
 |---|---|---|
-| [`backend/`](backend/) | `M01`–`M13`, `M15` | API REST, domínio, motor de execução, motor de script (Java 21 + Spring Boot 3.x + Maven) |
+| [`backend/`](backend/) | `M01`–`M13`, `M15` | API REST, domínio, motor de execução, motor de script (Java 21 + Spring Boot 4.1.x + Maven) |
 | [`frontend/`](frontend/) | `M14`, `M07` | Aplicação Next.js (App Router) + TypeScript + `bpmn-js` + Monaco |
 | [`database/`](database/) | apoio a `M01` | Migrations Flyway, seeds e documentação do schema PostgreSQL |
 | [`infra/`](infra/) | apoio a `M01`/`M15` | `docker-compose`, Dockerfiles, variáveis de ambiente |
@@ -26,13 +26,13 @@ requirements → simulation → reporting`, verificada por ArchUnit.
 ## Stack
 
 Next.js · TypeScript · React · bpmn-js · Monaco · Tailwind · shadcn/ui · TanStack Query ·
-Java 21 · Spring Boot 3.x · Spring Data JPA · Spring Security + JWT · PostgreSQL 16 (JSONB) ·
+Java 21 · Spring Boot 4.1.x · Spring Data JPA · Spring Security + JWT · PostgreSQL 16 (JSONB) ·
 Flyway · GraalVM JavaScript · springdoc-openapi · JUnit 5 · Testcontainers · Vitest · Playwright.
 
 ## Pré-requisitos
 
 - **JDK 21** (Temurin) — build e execução do backend
-- **Node.js 20 LTS** — build do frontend
+- **Node.js 24** — build do frontend
 - **Docker Desktop** — `docker compose` para Postgres + backend + frontend
 - **Git**
 

@@ -13,6 +13,39 @@
 
 ---
 
+## Estado de implementação
+
+> Atualizar esta seção ao fim de cada bloco/módulo. É o primeiro lugar que uma nova sessão de
+> trabalho deve consultar para saber de onde continuar.
+
+| Bloco / Módulo | Estado | Evidência |
+|---|---|---|
+| Bloco 0 — Fundação (`M01`, infra) | ✅ concluído | commit `9b0aa21` em `main` |
+| `M01` — Core | ✅ concluído | `backend/src/main/java/br/ufmg/plataforma/core/`; `mvnw clean test` = 9 verdes; `docker compose up` sobe `db`+`backend`, `/actuator/health` UP, Swagger OK |
+| Bloco 1 — `M02` (IAM) | ⬜ **próximo** | — |
+| Bloco 1 — `M03` (Projetos) | ⬜ | — |
+| Bloco 1 — parte de `M14` (shell do front) | ⬜ | — |
+| Blocos 2–9 | ⬜ | — |
+
+**Baseline técnico efetivo** (ver `D-08`..`D-11` e `docs/adr/0001`):
+Java 21 · Spring Boot **4.1.1** (starters de teste modularizados; `@WebMvcTest` em
+`org.springframework.boot.webmvc.test.autoconfigure`) · pacote raiz `br.ufmg.plataforma` ·
+um módulo = um pacote Java (não um serviço) · `mvnw` com `JAVA_HOME` =
+`C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`.
+
+**O que o `M01` já oferece ao `M02`:**
+`BaseEntity` / `AuditableEntity` (`core.domain`) · `DomainException` /
+`ResourceNotFoundException` / `BusinessRuleException` · `GlobalExceptionHandler` +
+`ErrorType` (`core.web`, contrato `IF-01` RFC 9457) · `DomainEventPublisher` (`core.event`,
+`IF-02`) · `@EnableJpaAuditing` + `AuditorAware` devolvendo `"system"` (`core.config` —
+o `M02` deve trocar para o usuário autenticado) · `SecurityConfig` **provisório** que libera
+tudo (`core.config` — o `M02` **substitui** por `SecurityFilterChain` com JWT + RBAC) ·
+OpenAPI com `SecurityScheme` `bearer-jwt` já registrado · CORS para `app.cors.allowed-origins`.
+Migrations: só `V1__baseline.sql` (`pgcrypto`); o `M02` cria `V2__iam.sql`.
+`PageResponse`/DTO de paginação ainda **não existe** — criar no `M02`.
+
+---
+
 ## 0. Como usar este documento
 
 ### 0.1 Para uma IA que for planejar ou executar uma atividade

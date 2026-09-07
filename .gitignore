@@ -1,0 +1,40 @@
+# ---------- Sistema Operacional ----------
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---------- IDEs / Editores ----------
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+
+# ---------- Backend (Java / Maven) ----------
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/**/*.class
+backend/HELP.md
+*.log
+
+# ---------- Frontend (Next.js / Node) ----------
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env*.local
+frontend/next-env.d.ts
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# ---------- Infra / Segredos ----------
+infra/.env
+**/.env
+!**/.env.example
+*.local
+
+# ---------- Diversos ----------
+tmp/
+*.pid

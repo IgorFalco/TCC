@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: plataforma
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bpmn}
+    username: ${SPRING_DATASOURCE_USERNAME:bpmn}
+    password: ${SPRING_DATASOURCE_PASSWORD:bpmn}
+  jpa:
+    hibernate:
+      ddl-auto: none          # schema é 100% governado pelo Flyway (regra inviolável 7)
+    open-in-view: false
+    properties:
+      hibernate.format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration   # populado a partir de /database/migrations pelo build
+    baseline-on-migrate: false
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Segredo JWT usado pelo M02 (IAM) — sobrescreva por variável de ambiente
+security:
+  jwt:
+    secret: ${JWT_SECRET:troque-este-segredo-em-desenvolvimento-local-1234567890}
+    expiration-minutes: 120
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

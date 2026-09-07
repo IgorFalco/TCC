@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@WebMvcTest
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.DummyController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import({GlobalExceptionHandler.class, GlobalExceptionHandlerTest.DummyController.class})
 class GlobalExceptionHandlerTest {

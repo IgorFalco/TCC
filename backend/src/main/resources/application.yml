@@ -45,6 +45,8 @@ security:
   jwt:
     secret: ${JWT_SECRET:troque-este-segredo-em-desenvolvimento-local-1234567890}
     expiration-minutes: 120
+    refresh-expiration-minutes: 10080   # 7 dias
+    issuer: plataforma-bpmn
 
 springdoc:
   swagger-ui:
